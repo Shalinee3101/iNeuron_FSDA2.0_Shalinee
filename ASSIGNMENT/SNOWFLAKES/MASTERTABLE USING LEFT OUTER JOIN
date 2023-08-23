@@ -1,0 +1,144 @@
+CREATE OR REPLACE TABLE SP_Brokers
+(BrokerID INT NOT NULL PRIMARY KEY,
+ BrokerCode VARCHAR(70),
+ BrokerFullName	VARCHAR(60),
+ DistributionNetwork VARCHAR(60),
+ DistributionChannel VARCHAR(60),
+ CommissionScheme VARCHAR(50));
+
+ SELECT * FROM SP_Brokers;
+ 
+ CREATE OR REPLACE TABLE SP_Products
+ (ProductID	INT NOT NULL PRIMARY KEY,
+ ProductCategory VARCHAR(60),
+ ProductSubCategory	VARCHAR(60),
+ Product VARCHAR(40)
+ );
+
+ SELECT * FROM SP_Products;
+ 
+ CREATE OR REPLACE TABLE SP_Regions
+ (Region_id INT NOT NULL PRIMARY KEY,
+  name VARCHAR(50),
+  county VARCHAR(100),
+  state_code CHAR(5),
+  state	VARCHAR(60),
+  type VARCHAR(50),
+  latitude NUMBER(11,4),
+  longitude	NUMBER(11,4),
+  area_code	INT,
+  population INT,
+  households INT,
+  median_income	INT, 
+  land_area	INT,
+  water_area INT,
+  time_zone VARCHAR(70)
+);
+
+SELECT * FROM SP_Regions;
+
+CREATE OR REPLACE TABLE SP_Customers
+(CustomerID INT NOT NULL PRIMARY KEY,
+ LastName VARCHAR(60),
+ FirstName VARCHAR(60),
+ BirthDate VARCHAR(20),
+ Gender VARCHAR(20),
+ ParticipantType VARCHAR(20),
+ RegionID INT,
+ MaritalStatus VARCHAR(15)
+ );
+
+SELECT * FROM SP_Customers;
+ 
+CREATE OR REPLACE TABLE SP_State_Regions
+(StateCode VARCHAR(20) NOT NULL PRIMARY KEY,
+ State VARCHAR(30),
+ Region VARCHAR(20)
+ );
+
+SELECT * FROM SP_State_Regions;
+ 
+CREATE OR REPLACE TABLE SP_Priorities
+(ID	INT NOT NULL PRIMARY KEY,
+ Description VARCHAR(50)
+);
+
+SELECT * FROM SP_Priorities;
+
+CREATE OR REPLACE TABLE SP_Statuses
+(ID	INT NOT NULL PRIMARY KEY,
+ Description VARCHAR(15)
+);
+
+SELECT * FROM SP_Statuses;
+
+CREATE OR REPLACE TABLE SP_Categories
+(ID	INT NOT NULL PRIMARY KEY,
+ Description VARCHAR(200),
+ Active INT
+);
+
+SELECT * FROM SP_Categories;
+
+CREATE OR REPLACE TABLE SP_Sources
+(ID	INT NOT NULL PRIMARY KEY,
+ Description VARCHAR(20)
+);
+
+SELECT * FROM SP_Sources;
+
+CREATE OR REPLACE TABLE SP_Types
+(ID	INT NOT NULL PRIMARY KEY,
+ Description VARCHAR(20)
+);
+
+SELECT * FROM SP_Types;
+
+CREATE OR REPLACE TABLE SP_ComplainsData
+(ID INT NOT NULL PRIMARY KEY, 
+ ComplainDate VARCHAR(20),
+ CompletionDate VARCHAR(20),
+ CustomerID INT,
+ BrokerID INT,
+ ProductID INT,
+ ComplainPriorityID	INT,
+ ComplainTypeID INT,
+ ComplainSourceID INT,
+ ComplainCategoryID INT,
+ ComplainStatusID INT,
+ AdministratorID STRING,
+ ClientSatisfaction STRING,
+ ExpectedReimbursement NUMBER(8,2)
+ );
+
+SELECT * FROM SP_ComplainsData;
+
+ CREATE OR REPLACE TABLE SP_StatusHistoryData
+(ID	INT NOT NULL PRIMARY KEY,
+ ComplaintID INT,
+ ComplaintStatusID INT,
+ StatusDate VARCHAR(20)
+);
+
+SELECT * FROM SP_StatusHistoryData;
+
+-------------------------- MASTER TABLE ------------------------------------------
+
+CREATE OR REPLACE TABLE SP_MASTER_COMPLAIN AS 
+SELECT COM.ID, COM.ComplainDate, COM.CompletionDate, CUS.CustomerID, CUS.LastName, CUS.FirstName, CUS.BIRTHDATE, CUS.GENDER, BRK.BROKERID, BRK.BROKERCODE, BRK.BROKERFULLNAME, CAT.DESCRIPTION as DESCRIPTION_Categories, SR.REGION, REG.STATE, ST.DESCRIPTION as DESCRIPTION_Statuses, PRD.PRODUCTID, PRD.PRODUCTCATEGORY, PRI.DESCRIPTION as DESCRIPTION_Priorities, SRC.DESCRIPTION as DESCRIPTION_Sources, TYP.DESCRIPTION as DESCRIPTION_Types, SH.COMPLAINTID
+FROM SP_ComplainsData AS COM  
+LEFT OUTER JOIN SP_Customers as CUS on COM.CustomerID = CUS.CustomerID
+LEFT OUTER JOIN SP_StatusHistoryData as SH on COM.ID = SH.ID
+LEFT OUTER JOIN SP_Regions as REG on CUS.RegionID = REG.REGION_ID
+LEFT OUTER JOIN SP_State_Regions as SR on REG.state_code = SR.StateCode
+LEFT OUTER JOIN SP_Brokers as BRK on COM.BROKERID = BRK.BROKERID
+LEFT OUTER JOIN SP_Categories as CAT on COM.ComplainCategoryID = CAT.ID
+LEFT OUTER JOIN SP_Priorities as PRI on COM.ComplainPriorityID = PRI.ID
+LEFT OUTER JOIN SP_Products as PRD on COM.ProductID = PRD.ProductID
+LEFT OUTER JOIN SP_Sources as SRC on COM.ComplainSourceID = SRC.ID
+LEFT OUTER JOIN SP_Statuses as ST on COM.ComplainStatusID = ST.ID
+LEFT OUTER JOIN SP_Types as TYP on COM.ComplainTypeID = TYP.ID;
+
+DESCRIBE TABLE SP_MASTER_COMPLAIN;
+
+SELECT * FROM SP_MASTER_COMPLAIN;
